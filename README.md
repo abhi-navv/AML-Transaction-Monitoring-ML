@@ -1,4 +1,4 @@
-# 🛡️ Intelligent Anti-Money Laundering (AML) Transaction Monitoring System
+#  Intelligent Anti-Money Laundering (AML) Transaction Monitoring System
 
 <p align="center">
   <em>An end-to-end Machine Learning and Explainable AI (XAI) framework for detecting sophisticated financial crime, mitigating false positives, and providing regulatory transparency in real time.</em>
@@ -15,7 +15,7 @@
 
 ---
 
-## 📑 Table of Contents
+##  Table of Contents
 
 - [Overview & Motivation](#-overview--motivation)
 - [Key Features](#-key-features)
@@ -39,7 +39,7 @@
 
 ---
 
-## 📌 Overview & Motivation
+##  Overview & Motivation
 
 Money laundering is an escalating systemic vulnerability for global financial systems. Traditional anti-money laundering (AML) workflows rely heavily on static, rule-based threshold filters (e.g., rigid transaction amount caps and basic velocity triggers). These legacy mechanisms suffer from severe limitations:
 
@@ -50,22 +50,22 @@ This open-source repository provides an **Intelligent AML Transaction Monitoring
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-- 🔍 **Comprehensive Exploratory Data Analysis (EDA)**: Profiling of customer behaviors, transaction flows, and risk indicators.
-- ⚙️ **Production Data Preprocessing**: Automated pipelines for missing data imputation, duplicate removal, outlier bounding, and encoding.
-- 🧪 **Domain-Specific Feature Engineering**: Temporal velocity attributes, customer historical deviations, and cross-border risk scoring.
-- ⚖️ **Imbalance Handling**: Advanced oversampling via **SMOTE**, **Borderline-SMOTE**, and cost-sensitive loss weighting.
-- 🤖 **Multi-Model Benchmark**: Comprehensive training across 7 diverse ML algorithms (Logistic Regression, Decision Trees, Random Forest, SVM, XGBoost, LightGBM, and CatBoost).
-- 🎛️ **Hyperparameter Optimization**: Automated tuning using Grid Search and Random Search.
-- 📊 **Robust Evaluation Metrics**: Prioritization of metric reliability via **PR-AUC**, **MCC**, **Recall**, and **Confusion Matrices**.
-- 💡 **Audit-Ready Explainability (XAI)**: Native integration of **SHAP** and **LIME** for transparent, explainable alert generation.
-- 🌐 **Real-Time Web API & Dashboard**: Interactive compliance officer dashboard and low-latency inference endpoint.
-- 🗄️ **Secure Database Layer**: Persistent schema for storing customer entities, transaction streams, AML alerts, and audit trails.
+-  **Comprehensive Exploratory Data Analysis (EDA)**: Profiling of customer behaviors, transaction flows, and risk indicators.
+-  **Production Data Preprocessing**: Automated pipelines for missing data imputation, duplicate removal, outlier bounding, and encoding.
+-  **Domain-Specific Feature Engineering**: Temporal velocity attributes, customer historical deviations, and cross-border risk scoring.
+-  **Imbalance Handling**: Advanced oversampling via **SMOTE**, **Borderline-SMOTE**, and cost-sensitive loss weighting.
+- **Multi-Model Benchmark**: Comprehensive training across 7 diverse ML algorithms (Logistic Regression, Decision Trees, Random Forest, SVM, XGBoost, LightGBM, and CatBoost).
+-  **Hyperparameter Optimization**: Automated tuning using Grid Search and Random Search.
+-  **Robust Evaluation Metrics**: Prioritization of metric reliability via **PR-AUC**, **MCC**, **Recall**, and **Confusion Matrices**.
+-  **Audit-Ready Explainability (XAI)**: Native integration of **SHAP** and **LIME** for transparent, explainable alert generation.
+-  **Real-Time Web API & Dashboard**: Interactive compliance officer dashboard and low-latency inference endpoint.
+-  **Secure Database Layer**: Persistent schema for storing customer entities, transaction streams, AML alerts, and audit trails.
 
 ---
 
-## 🎯 Project Objectives
+##  Project Objectives
 
 This project follows a structured 12-point technical execution plan:
 
@@ -84,7 +84,7 @@ This project follows a structured 12-point technical execution plan:
 
 ---
 
-## 🏗️ System Architecture
+##  System Architecture
 
 ```mermaid
 flowchart LR
@@ -109,7 +109,7 @@ flowchart LR
 
 ---
 
-## 🔬 Machine Learning Pipeline & Methodology
+##  Machine Learning Pipeline & Methodology
 
 ### 1. Data Preprocessing & Feature Engineering
 - **Data Sanitization**: Handling missing attributes, outlier detection, and categorical encodings (One-Hot & Target Encoding).
@@ -148,7 +148,7 @@ Financial regulations (e.g., FinCEN, FATF, GDPR right-to-explanation) require cl
 
 ---
 
-## 📂 Repository Structure
+##  Repository Structure
 
 ```text
 AML-Transaction-Monitoring-ML/
@@ -188,7 +188,7 @@ AML-Transaction-Monitoring-ML/
 
 ---
 
-## 🛠️ Technology Stack
+##  Technology Stack
 
 - **Core & Runtime**: Python 3.10+
 - **Data Processing**: Pandas, NumPy, SciPy
@@ -201,7 +201,7 @@ AML-Transaction-Monitoring-ML/
 
 ---
 
-## 🚀 Quickstart Guide
+##  Quickstart Guide
 
 ### Prerequisites
 - Python 3.10 or higher
@@ -234,7 +234,7 @@ AML-Transaction-Monitoring-ML/
 
 ---
 
-## 🗺️ Project Roadmap
+##  Project Roadmap
 
 - [ ] **Phase 1: Exploratory Data Analysis (EDA)** — Distribution profiling and risk correlation.
 - [ ] **Phase 2: Preprocessing & Feature Pipeline** — Imputation, outlier handling, and velocity feature engineering.
@@ -246,7 +246,7 @@ AML-Transaction-Monitoring-ML/
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/navyavm123-sudo/AML-Transaction-Monitoring-ML/issues).
 
@@ -258,7 +258,7 @@ Contributions, issues, and feature requests are welcome! Feel free to check the 
 
 ---
 
-## 👥 Authors
+##  Authors
 
 This project is developed and maintained by:
 
@@ -266,11 +266,11 @@ This project is developed and maintained by:
 | :--- | :--- |
 | Navya VM | [@navyavm123-sudo](https://github.com/navyavm123-sudo) |
 
-📂 **Project Repository**: [navyavm123-sudo/AML-Transaction-Monitoring-ML](https://github.com/navyavm123-sudo/AML-Transaction-Monitoring-ML)
+**Project Repository**: [navyavm123-sudo/AML-Transaction-Monitoring-ML](https://github.com/navyavm123-sudo/AML-Transaction-Monitoring-ML)
 
 ---
 
-## 📜 Citation & License
+## Citation & License
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more information.
 
