@@ -38,10 +38,16 @@ except ImportError:
     MODELS_DIR = PROJECT_ROOT / "models_saved"
     PROCESSED_DATA_DIR = PROJECT_ROOT / "data" / "processed"
 
+from src.explainability import (
+    ExplainabilityError,
+    ExplainabilityService,
+    LocalExplanation,
+    UnsupportedModelExplainerError,
+)
+
 # Configure Logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 )
 logger = logging.getLogger("aml_api")
 
@@ -71,6 +77,9 @@ model_artifacts = {
     "model_name": "Placeholder / Fallback Predictor",
     "version": "1.0.0-dev",
 }
+
+# Explainability Service Facade
+explainability_service = ExplainabilityService()
 
 
 def load_model_artifacts():
@@ -104,7 +113,9 @@ def load_model_artifacts():
             model_artifacts["model"] = loaded_model
             model_artifacts["is_loaded"] = True
             model_artifacts["model_name"] = type(loaded_model).__name__
-            logger.info(f"Successfully loaded trained Kaggle model ({model_artifacts['model_name']}) from {MODEL_PATH}")
+            logger.info(
+                f"Successfully loaded trained Kaggle model ({model_artifacts['model_name']}) from {MODEL_PATH}"
+            )
         except Exception as e:
             logger.error(f"Error loading model from {MODEL_PATH}: {e}")
             model_artifacts["is_loaded"] = False
@@ -116,6 +127,18 @@ def load_model_artifacts():
         )
         model_artifacts["is_loaded"] = False
         model_artifacts["model_name"] = "Mock-Predictor (Waiting for Kaggle model)"
+
+    # 4. Synchronize Explainability Service with Loaded Artifacts
+    if model_artifacts["is_loaded"] and model_artifacts["model"] is not None:
+        try:
+            explainability_service.set_model_artifacts(
+                model=model_artifacts["model"],
+                preprocessor=model_artifacts["preprocessor"],
+                selector=model_artifacts["selector"],
+            )
+            logger.info("Configured ExplainabilityService with loaded model artifacts.")
+        except Exception as e:
+            logger.warning(f"Could not configure ExplainabilityService with model: {e}")
 
 
 def predict_single_transaction(data_dict: Dict[str, Any]) -> Dict[str, Any]:
@@ -151,15 +174,24 @@ def predict_single_transaction(data_dict: Dict[str, Any]) -> Dict[str, Any]:
                 df["DayOfWeek"] = df["Date_dt"].dt.dayofweek.fillna(0)
                 df["Is_weekend"] = (df["DayOfWeek"] >= 5).astype(int)
 
-                time_series = pd.to_datetime(df["Time"], format="%H:%M:%S", errors="coerce")
+                time_series = pd.to_datetime(
+                    df["Time"], format="%H:%M:%S", errors="coerce"
+                )
                 df["Hour"] = time_series.dt.hour.fillna(12)
                 df["Is_night"] = ((df["Hour"] < 6) | (df["Hour"] >= 22)).astype(int)
 
             if "Payment_currency" in df.columns and "Received_currency" in df.columns:
-                df["Same_currency"] = (df["Payment_currency"] == df["Received_currency"]).astype(int)
+                df["Same_currency"] = (
+                    df["Payment_currency"] == df["Received_currency"]
+                ).astype(int)
 
-            if "Sender_bank_location" in df.columns and "Receiver_bank_location" in df.columns:
-                df["Cross_border"] = (df["Sender_bank_location"] != df["Receiver_bank_location"]).astype(int)
+            if (
+                "Sender_bank_location" in df.columns
+                and "Receiver_bank_location" in df.columns
+            ):
+                df["Cross_border"] = (
+                    df["Sender_bank_location"] != df["Receiver_bank_location"]
+                ).astype(int)
 
             if "Amount" in df.columns:
                 df["Log_amount"] = np.log1p(np.maximum(df["Amount"].astype(float), 0))
@@ -192,7 +224,7 @@ def predict_single_transaction(data_dict: Dict[str, Any]) -> Dict[str, Any]:
                 "is_suspicious": bool(prediction == 1),
                 "prediction_label": "Suspicious" if prediction == 1 else "Legitimate",
                 "model_status": "kaggle_model_active",
-                "model_name": model_artifacts["model_name"]
+                "model_name": model_artifacts["model_name"],
             }
 
         except Exception as e:
@@ -204,7 +236,9 @@ def predict_single_transaction(data_dict: Dict[str, Any]) -> Dict[str, Any]:
     # Fallback / Mock Inference (Active until Kaggle model is placed)
     # -------------------------------------------------------------
     amount = float(data_dict.get("Amount", 0.0))
-    is_cross_border = data_dict.get("Sender_bank_location") != data_dict.get("Receiver_bank_location")
+    is_cross_border = data_dict.get("Sender_bank_location") != data_dict.get(
+        "Receiver_bank_location"
+    )
     is_cash = "Cash" in str(data_dict.get("Payment_type", ""))
 
     # Simple heuristic risk calculation as placeholder
@@ -225,7 +259,7 @@ def predict_single_transaction(data_dict: Dict[str, Any]) -> Dict[str, Any]:
         "prediction_label": "Suspicious" if is_suspicious else "Legitimate",
         "model_status": "awaiting_kaggle_model",
         "model_name": model_artifacts["model_name"],
-        "note": "Using rule-based simulation. Place your Kaggle model in 'models_saved/best_model.joblib' to activate ML predictions."
+        "note": "Using rule-based simulation. Place your Kaggle model in 'models_saved/best_model.joblib' to activate ML predictions.",
     }
 
 
@@ -233,33 +267,59 @@ def predict_single_transaction(data_dict: Dict[str, Any]) -> Dict[str, Any]:
 # 📋 PYDANTIC SCHEMAS (REQUEST & RESPONSE MODELS)
 # ==============================================================================
 
+
 class TransactionInput(BaseModel):
     """Schema representing an incoming financial transaction or network event."""
+
     model_config = ConfigDict(extra="allow")
 
-    Sender_account: Optional[Union[str, int]] = Field(default="ACC-891024", description="Unique identifier for sender account")
-    Receiver_account: Optional[Union[str, int]] = Field(default="ACC-381940", description="Unique identifier for receiver account")
-    Amount: float = Field(default=12500.00, ge=0.0, description="Transaction monetary amount")
-    Payment_currency: Optional[str] = Field(default="US Dollar", description="Currency sent")
-    Received_currency: Optional[str] = Field(default="Euro", description="Currency received")
-    Sender_bank_location: Optional[str] = Field(default="USA", description="Originating country or jurisdiction")
-    Receiver_bank_location: Optional[str] = Field(default="Switzerland", description="Destination country or jurisdiction")
-    Payment_type: Optional[str] = Field(default="Cross-border", description="Transaction method (e.g. Cross-border, Cash Deposit, ACH)")
-    Date: Optional[str] = Field(default="2023-10-15", description="Transaction date (YYYY-MM-DD)")
-    Time: Optional[str] = Field(default="23:45:10", description="Transaction time (HH:MM:SS)")
-    Laundering_type: Optional[str] = Field(default=None, description="Known laundering typology if labeled")
+    Sender_account: Optional[Union[str, int]] = Field(
+        default="ACC-891024", description="Unique identifier for sender account"
+    )
+    Receiver_account: Optional[Union[str, int]] = Field(
+        default="ACC-381940", description="Unique identifier for receiver account"
+    )
+    Amount: float = Field(
+        default=12500.00, ge=0.0, description="Transaction monetary amount"
+    )
+    Payment_currency: Optional[str] = Field(
+        default="US Dollar", description="Currency sent"
+    )
+    Received_currency: Optional[str] = Field(
+        default="Euro", description="Currency received"
+    )
+    Sender_bank_location: Optional[str] = Field(
+        default="USA", description="Originating country or jurisdiction"
+    )
+    Receiver_bank_location: Optional[str] = Field(
+        default="Switzerland", description="Destination country or jurisdiction"
+    )
+    Payment_type: Optional[str] = Field(
+        default="Cross-border",
+        description="Transaction method (e.g. Cross-border, Cash Deposit, ACH)",
+    )
+    Date: Optional[str] = Field(
+        default="2023-10-15", description="Transaction date (YYYY-MM-DD)"
+    )
+    Time: Optional[str] = Field(
+        default="23:45:10", description="Transaction time (HH:MM:SS)"
+    )
+    Laundering_type: Optional[str] = Field(
+        default=None, description="Known laundering typology if labeled"
+    )
 
 
 class BatchTransactionInput(BaseModel):
     """Schema for batch transaction inference."""
+
     transactions: List[TransactionInput] = Field(
-        ...,
-        description="List of transactions to evaluate simultaneously"
+        ..., description="List of transactions to evaluate simultaneously"
     )
 
 
 class PredictionResponse(BaseModel):
     """Schema for individual prediction result."""
+
     transaction_id: Optional[Union[str, int]] = None
     is_suspicious: bool
     risk_score: float
@@ -273,6 +333,7 @@ class PredictionResponse(BaseModel):
 
 class BatchPredictionResponse(BaseModel):
     """Schema for batch prediction result."""
+
     total_processed: int
     suspicious_count: int
     processing_time_ms: float
@@ -281,6 +342,7 @@ class BatchPredictionResponse(BaseModel):
 
 class ModelInfoResponse(BaseModel):
     """Schema for model status and runtime metadata."""
+
     status: str
     is_model_loaded: bool
     model_name: str
@@ -293,6 +355,7 @@ class ModelInfoResponse(BaseModel):
 # ==============================================================================
 # 🚀 FASTAPI APP INITIALIZATION & LIFESPAN
 # ==============================================================================
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -314,7 +377,7 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
 
 # Enable CORS for external dashboards and microservices
@@ -331,6 +394,7 @@ app.add_middleware(
 # 🌐 API ENDPOINTS
 # ==============================================================================
 
+
 @app.get("/", tags=["General"])
 async def root():
     """Root endpoint providing service status and quick links."""
@@ -341,7 +405,7 @@ async def root():
         "model_loaded": model_artifacts["is_loaded"],
         "model_name": model_artifacts["model_name"],
         "docs_url": "/docs",
-        "health_check": "/health"
+        "health_check": "/health",
     }
 
 
@@ -355,7 +419,7 @@ async def health_check():
         model_path=str(MODEL_PATH),
         preprocessor_loaded=model_artifacts["preprocessor"] is not None,
         selector_loaded=model_artifacts["selector"] is not None,
-        purpose="FastAPI lets other applications use your trained model to detect suspicious network traffic without opening your Kaggle notebook."
+        purpose="FastAPI lets other applications use your trained model to detect suspicious network traffic without opening your Kaggle notebook.",
     )
 
 
@@ -375,7 +439,7 @@ async def predict_transaction(transaction: TransactionInput):
         logger.error(f"Prediction failed: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Inference execution failed: {str(e)}"
+            detail=f"Inference execution failed: {str(e)}",
         )
 
     elapsed_ms = round((time.time() - start_time) * 1000, 2)
@@ -400,7 +464,7 @@ async def predict_transaction(transaction: TransactionInput):
         model_status=res["model_status"],
         model_name=res["model_name"],
         processing_time_ms=elapsed_ms,
-        note=res.get("note")
+        note=res.get("note"),
     )
 
 
@@ -443,7 +507,7 @@ async def predict_batch(batch_input: BatchTransactionInput):
                 model_status=res["model_status"],
                 model_name=res["model_name"],
                 processing_time_ms=item_elapsed,
-                note=res.get("note")
+                note=res.get("note"),
             )
         )
 
@@ -453,8 +517,66 @@ async def predict_batch(batch_input: BatchTransactionInput):
         total_processed=len(results),
         suspicious_count=suspicious_count,
         processing_time_ms=total_elapsed,
-        results=results
+        results=results,
     )
+
+
+@app.post("/explain", response_model=LocalExplanation, tags=["Explainability"])
+async def explain_transaction_endpoint(
+    transaction: TransactionInput,
+    method: str = "shap",
+    top_k: int = 10,
+):
+    """Generate dual-granularity SHAP or LIME explanation for an individual transaction.
+
+    Args:
+        transaction: Incoming transaction attributes payload.
+        method: Explanation algorithm ('shap' by default, 'lime' on demand).
+        top_k: Maximum number of top features to return in raw and domain views.
+    """
+    if not model_artifacts["is_loaded"] or model_artifacts["model"] is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=(
+                "Machine learning model is not loaded. Place a trained model in "
+                "'models_saved/best_model.joblib' or reload artifacts to generate explanations."
+            ),
+        )
+
+    method_clean = method.lower().strip()
+    if method_clean not in ("shap", "lime"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid explanation method '{method}'. Supported methods are 'shap' and 'lime'.",
+        )
+
+    try:
+        data_dict = transaction.model_dump()
+        explanation = explainability_service.explain_transaction(
+            transaction=data_dict,
+            raw_record=data_dict,
+            method=method_clean,
+            top_k=top_k,
+        )
+        return explanation
+    except UnsupportedModelExplainerError as e:
+        logger.warning(f"Unsupported model explainer requested: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e),
+        )
+    except ExplainabilityError as e:
+        logger.error(f"Explainability execution failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Explainability execution failed: {str(e)}",
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error during explanation: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Unexpected error during explanation: {str(e)}",
+        )
 
 
 @app.post("/model/reload", tags=["Administration"])
@@ -470,10 +592,11 @@ async def reload_model():
         "message": "Model artifacts reloaded successfully.",
         "is_model_loaded": model_artifacts["is_loaded"],
         "model_name": model_artifacts["model_name"],
-        "model_path": str(MODEL_PATH)
+        "model_path": str(MODEL_PATH),
     }
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("src.api:app", host="0.0.0.0", port=8000, reload=True)
