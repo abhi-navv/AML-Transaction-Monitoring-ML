@@ -1,4 +1,4 @@
-#  Intelligent Anti-Money Laundering (AML) Transaction Monitoring System
+# Intelligent Anti-Money Laundering (AML) Transaction Monitoring System
 
 <p align="center">
   <em>An end-to-end Machine Learning and Explainable AI (XAI) framework for detecting sophisticated financial crime, mitigating false positives, and providing regulatory transparency in real time.</em>
@@ -9,213 +9,188 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License: MIT"></a>
   <a href="https://github.com/navyavm123-sudo/AML-Transaction-Monitoring-ML/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square" alt="PRs Welcome"></a>
   <a href="https://github.com/psf/black"><img src="https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square" alt="Code Style: Black"></a>
-  <a href="#explainable-ai-xai"><img src="https://img.shields.io/badge/XAI-SHAP%20%7C%20LIME-green?style=flat-square" alt="Explainability: SHAP & LIME"></a>
+  <a href="#explainable-ai-shap--lime"><img src="https://img.shields.io/badge/XAI-SHAP%20%7C%20LIME-green?style=flat-square" alt="Explainability: SHAP & LIME"></a>
   <a href="#project-roadmap"><img src="https://img.shields.io/badge/Project%20Status-Active%20Development-yellow?style=flat-square" alt="Status"></a>
 </p>
 
 ---
 
-##  Table of Contents
+## Table of Contents
 
-- [Overview & Motivation](#-overview--motivation)
-- [Key Features](#-key-features)
-- [Project Objectives](#-project-objectives)
-- [System Architecture](#-system-architecture)
-- [Machine Learning Pipeline & Methodology](#-machine-learning-pipeline--methodology)
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [System Architecture](#system-architecture)
+- [Machine Learning Workflow](#machine-learning-workflow)
   - [1. Data Preprocessing & Feature Engineering](#1-data-preprocessing--feature-engineering)
-  - [2. Class Imbalance Resolution](#2-class-imbalance-resolution)
-  - [3. Model Benchmarking Suite](#3-model-benchmarking-suite)
-  - [4. Evaluation Metrics Matrix](#4-evaluation-metrics-matrix)
-  - [5. Explainable AI (XAI) for Compliance](#5-explainable-ai-xai-for-compliance)
-- [Repository Structure](#-repository-structure)
-- [Technology Stack](#-technology-stack)
-- [Quickstart Guide](#-quickstart-guide)
+  - [2. Handling Extreme Class Imbalance](#2-handling-extreme-class-imbalance)
+  - [3. Model Benchmarking](#3-model-benchmarking)
+  - [4. Evaluation Metrics](#4-evaluation-metrics)
+  - [5. Explainable AI (SHAP & LIME)](#5-explainable-ai-shap--lime)
+- [Repository Structure](#repository-structure)
+- [Technology Stack](#technology-stack)
+- [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
-- [Project Roadmap](#-project-roadmap)
-- [Contributing](#-contributing)
-- [Authors](#-authors)
-- [Citation & License](#-citation--license)
+  - [Running the API](#running-the-api)
+  - [Running the Notebooks](#running-the-notebooks)
+  - [Running Tests](#running-tests)
+- [Project Roadmap](#project-roadmap)
+- [Contributing](#contributing)
+- [Authors](#authors)
+- [Citation & License](#citation--license)
 
 ---
 
-##  Overview & Motivation
+## Overview
 
-Money laundering is an escalating systemic vulnerability for global financial systems. Traditional anti-money laundering (AML) workflows rely heavily on static, rule-based threshold filters (e.g., rigid transaction amount caps and basic velocity triggers). These legacy mechanisms suffer from severe limitations:
+Traditional Anti-Money Laundering (AML) monitoring systems rely heavily on static, rule-based threshold filters (such as fixed transaction amount limits or basic frequency counts). In production environments, these legacy rules typically generate false positive rates exceeding 90–95%, burdening compliance teams with alert fatigue while often missing complex laundering patterns such as structuring (smurfing), multi-hop layering, and rapid fund movement.
 
-- **Excessive False Positive Rates (FPR)**: Typically exceeding **90–95%**, leading to massive alert fatigue, soaring operational costs, and wasted compliance officer hours.
-- **Blindness to Advanced Typologies**: Inability to identify multi-hop layering networks, structuring (*smurfing*), rapid movement of illicit capital, and synthetic identities.
-
-This open-source repository provides an **Intelligent AML Transaction Monitoring System** engineered using supervised machine learning algorithms, advanced imbalanced data handling, and regulatory-grade Explainable AI (XAI).
+This repository provides an end-to-end machine learning solution for AML transaction monitoring. It covers the full lifecycle: exploratory data analysis, domain-driven feature engineering, handling extreme class imbalance, multi-model benchmarking, explainable AI (XAI) using SHAP and LIME for regulatory compliance, and a low-latency FastAPI inference service for real-time transaction scoring.
 
 ---
 
 ## Key Features
 
--  **Comprehensive Exploratory Data Analysis (EDA)**: Profiling of customer behaviors, transaction flows, and risk indicators.
--  **Production Data Preprocessing**: Automated pipelines for missing data imputation, duplicate removal, outlier bounding, and encoding.
--  **Domain-Specific Feature Engineering**: Temporal velocity attributes, customer historical deviations, and cross-border risk scoring.
--  **Imbalance Handling**: Advanced oversampling via **SMOTE**, **Borderline-SMOTE**, and cost-sensitive loss weighting.
-- **Multi-Model Benchmark**: Comprehensive training across 7 diverse ML algorithms (Logistic Regression, Decision Trees, Random Forest, SVM, XGBoost, LightGBM, and CatBoost).
--  **Hyperparameter Optimization**: Automated tuning using Grid Search and Random Search.
--  **Robust Evaluation Metrics**: Prioritization of metric reliability via **PR-AUC**, **MCC**, **Recall**, and **Confusion Matrices**.
--  **Audit-Ready Explainability (XAI)**: Native integration of **SHAP** and **LIME** for transparent, explainable alert generation.
--  **Real-Time Web API & Dashboard**: Interactive compliance officer dashboard and low-latency inference endpoint.
--  **Secure Database Layer**: Persistent schema for storing customer entities, transaction streams, AML alerts, and audit trails.
+- **Exploratory Data Analysis**: In-depth behavioral analysis of transaction patterns, velocity spikes, and fraud indicators across customer profiles.
+- **Data Preprocessing & Cleaning**: Robust pipelines for missing value imputation, outlier detection and handling, and categorical feature encoding.
+- **Domain-Specific Feature Engineering**: Aggregation features across rolling time windows (1h, 24h, 7d, 30d), historical deviation ratios, and cross-border risk scoring.
+- **Imbalance Handling**: Systematic application of SMOTE, Borderline-SMOTE, ADASYN, and cost-sensitive loss weighting to handle severe class imbalance (<1% suspicious transactions).
+- **Multi-Model Benchmarking**: Comparative evaluation across 7 supervised algorithms, including Logistic Regression, Decision Trees, Random Forest, SVM, XGBoost, LightGBM, and CatBoost.
+- **Hyperparameter Optimization**: Systematic parameter tuning via Grid Search and Randomized Search cross-validation.
+- **Imbalance-Aware Metrics**: Prioritization of PR-AUC, Recall (minimizing false negatives), Precision, and Matthews Correlation Coefficient (MCC) over standard accuracy.
+- **Explainable AI (XAI)**: Integrated SHAP and LIME explainability service providing local and global feature attributions for audit-ready compliance reporting.
+- **Real-Time FastAPI Service**: REST API endpoints for single-transaction and batch scoring with integrated feature explainability.
 
 ---
 
-##  Project Objectives
-
-This project follows a structured 12-point technical execution plan:
-
-1. **Exploratory Data Analysis (EDA)**: Uncover hidden transaction distributions, velocity trends, and suspicious activity characteristics.
-2. **Preprocessing Pipeline**: Robust handling of missing values, duplicates, outliers, categorical encoding, and numerical scaling.
-3. **Feature Engineering & Selection**: Quantify the impact of domain-specific engineered features and selection algorithms.
-4. **Class Imbalance Mitigation**: Evaluate synthetic sampling methods (e.g., SMOTE) on sparse AML positive labels.
-5. **Model Development & Comparison**: Benchmark **Logistic Regression**, **Decision Trees**, **Random Forest**, **SVM**, **XGBoost**, **LightGBM**, and **CatBoost**.
-6. **Hyperparameter Tuning**: Optimize model hyperparameters through Grid Search and Random Search.
-7. **Multi-Metric Evaluation**: Assess models using Accuracy, Precision, Recall, F1-Score, ROC-AUC, PR-AUC, Confusion Matrix, and Matthews Correlation Coefficient (**MCC**).
-8. **Explainable AI (XAI)**: Implement SHAP and LIME to generate local feature attributions and global model transparency.
-9. **Real-Time Classification System**: Deploy an API capable of streaming and classifying incoming transactions as legitimate or suspicious.
-10. **Interactive Compliance Dashboard**: Build visual interfaces for transaction statistics, customer risk profiles, and model performance tracking.
-11. **Secure Database Architecture**: Design schemas for historical transactions, alerts, and audit logs.
-12. **Rule-Based vs. ML Benchmarking**: Quantitatively validate the ML system's reduction of false positives against legacy rule-based engines.
-
----
-
-##  System Architecture
+## System Architecture
 
 ```mermaid
 flowchart LR
-    subgraph Ingestion_and_Prep [Data Pipeline]
-        A[(Raw Transaction & Customer Data)] --> B[Preprocessing & Imputation]
+    subgraph Data_Pipeline [Data Pipeline]
+        A[(Raw Transactions & Customer Data)] --> B[Preprocessing & Imputation]
         B --> C[Feature Engineering & Selection]
         C --> D[Class Imbalance Handling - SMOTE]
     end
 
-    subgraph ML_Core [Modeling & Evaluation]
-        D --> E[Multi-Model Training & Tuning]
-        E --> F[Evaluation Suite PR-AUC / MCC]
-        F --> G[Explainability Layer SHAP & LIME]
+    subgraph Modeling [Modeling & Evaluation]
+        D --> E[Multi-Model Benchmarking]
+        E --> F[Hyperparameter Tuning]
+        F --> G["Evaluation: PR-AUC, Recall, MCC"]
     end
 
-    subgraph Serving_and_Compliance [Deployment & Audit]
-        G --> H[Real-Time Scoring API]
-        H --> I[Interactive Compliance Dashboard]
-        H --> J[(Secure Database & Alert Store)]
+    subgraph Serving [Serving & Interpretability]
+        G --> H["Explainability Layer: SHAP & LIME"]
+        H --> I[FastAPI Real-Time Scoring]
+        I --> J[Alerts & Audit Logging]
     end
 ```
 
 ---
 
-##  Machine Learning Pipeline & Methodology
+## Machine Learning Workflow
 
 ### 1. Data Preprocessing & Feature Engineering
-- **Data Sanitization**: Handling missing attributes, outlier detection, and categorical encodings (One-Hot & Target Encoding).
+- **Sanitization & Imputation**: Cleaning inconsistent inputs, handling null values, and treating extreme outliers.
 - **Engineered Financial Indicators**:
-  - Velocity metrics: transaction counts and cumulative volume across sliding windows ($1\text{h}, 24\text{h}, 7\text{d}, 30\text{d}$).
-  - Deviation ratios: transaction amount relative to account historical mean and standard deviation.
-  - Geographic and jurisdictional risk flags.
+  - Velocity features: Transaction counts and total amounts across sliding windows (1h, 24h, 7d, 30d).
+  - Deviation ratios: Transaction amounts relative to the customer's historical mean and standard deviation.
+  - Risk indicators: Geographic and jurisdictional flags, unusual hour/day activity, and rapid balance depletion.
 
-### 2. Class Imbalance Resolution
-Because suspicious AML transactions typically comprise $< 1\%$ of total volume, standard loss functions fail. We employ:
-- **SMOTE** (Synthetic Minority Over-sampling Technique)
-- **Borderline-SMOTE** & **ADASYN**
-- **Cost-Sensitive Learning**: Class-weighted penalties on minority class misclassification.
+### 2. Handling Extreme Class Imbalance
+In AML datasets, confirmed illicit transactions typically represent less than 1% of total traffic. To avoid models defaulting to the majority class:
+- **Resampling Techniques**: Oversampling minority transactions using SMOTE, Borderline-SMOTE, and ADASYN.
+- **Cost-Sensitive Learning**: Adjusting class weights in tree loss functions to penalize false negatives more heavily than false positives.
 
-### 3. Model Benchmarking Suite
+### 3. Model Benchmarking
+We evaluate multiple algorithm families to balance detection accuracy, computational speed, and interpretability:
 
-| Category | Algorithm | Primary Strengths in AML |
+| Category | Algorithms | AML Considerations |
 | :--- | :--- | :--- |
-| **Linear Baselines** | Logistic Regression | Highly interpretable, fast linear baseline |
-| **Tree Ensembles** | Decision Trees, Random Forest | Captures non-linear feature splits, robust to outliers |
-| **Kernel Methods** | Support Vector Machines (SVM) | Effective in high-dimensional transformed spaces |
-| **Gradient Boosted Trees** | XGBoost, LightGBM, CatBoost | SOTA tabular performance, handles mixed data types and sparsity |
+| Linear Baselines | Logistic Regression | Fast, highly transparent baseline for comparison |
+| Tree Ensembles | Decision Trees, Random Forest | Captures non-linear thresholds and interactions |
+| Kernel Methods | Support Vector Machines (SVM) | Effective in transformed feature spaces |
+| Gradient Boosted Trees | XGBoost, LightGBM, CatBoost | State-of-the-art performance on tabular data; robust to sparse features |
 
-### 4. Evaluation Metrics Matrix
-Given extreme class imbalance, traditional accuracy is misleading. The project prioritizes:
-- **Precision-Recall Curve & PR-AUC**: Measures precision vs recall trade-off on sparse positives.
-- **Recall (Sensitivity)**: Minimizes missed money laundering activities (False Negatives).
-- **Precision**: Minimizes false alerts and analyst overhead (False Positives).
-- **Matthews Correlation Coefficient (MCC)**: High-reliability score for imbalanced binary classifications.
-- **ROC-AUC & Confusion Matrix**: Holistic threshold inspection.
+### 4. Evaluation Metrics
+Standard accuracy is misleading in high-imbalance scenarios (a model predicting all transactions as legitimate achieves >99% accuracy while catching zero crime). We prioritize:
+- **PR-AUC (Precision-Recall AUC)**: Focuses directly on the minority class trade-off.
+- **Recall (Sensitivity)**: Minimizes missed illicit transactions (False Negatives).
+- **Precision**: Minimizes false alerts and compliance officer investigation overhead.
+- **Matthews Correlation Coefficient (MCC)**: Balanced metric that accounts for all four confusion matrix quadrants.
 
-### 5. Explainable AI (XAI) for Compliance
-Financial regulations (e.g., FinCEN, FATF, GDPR right-to-explanation) require clear, auditable reasoning for flagged alerts:
-- **SHAP (SHapley Additive exPlanations)**: Computes exact marginal feature contributions per decision.
-- **LIME (Local Interpretable Model-agnostic Explanations)**: Builds local linear approximations around flagged transactions to provide concise reasons for compliance officers.
+### 5. Explainable AI (SHAP & LIME)
+Financial regulations (e.g., FinCEN, FATF, and GDPR right-to-explanation provisions) mandate that flagged alerts can be interpreted and justified:
+- **SHAP (SHapley Additive exPlanations)**: Computes mathematically sound Shapley values to show each feature's contribution toward the risk score.
+- **LIME (Local Interpretable Model-agnostic Explanations)**: Generates local surrogate linear models around individual transactions to explain specific flagged decisions in plain terms.
 
 ---
 
-##  Repository Structure
+## Repository Structure
 
 ```text
 AML-Transaction-Monitoring-ML/
 │
 ├── data/
-│   ├── raw/                 # Immutable source datasets
-│   ├── processed/           # Cleaned, transformed, and feature-engineered datasets
-│   └── external/            # External reference tables (risk indices, sanctions lists)
+│   ├── raw/                 # Source raw transaction datasets
+│   ├── processed/           # Transformed, preprocessed, and engineered datasets
+│   └── external/            # External reference tables (risk lists, country codes)
 │
 ├── notebooks/
-│   ├── 01_eda.ipynb                     # Exploratory Data Analysis & visual profiling
-│   ├── 02_preprocessing_fe.ipynb        # Data cleaning, encoding, feature engineering
-│   ├── 03_imbalance_handling.ipynb      # SMOTE and sampling experiments
-│   ├── 04_model_benchmarking.ipynb      # Training & cross-validation of ML models
-│   ├── 05_hyperparameter_tuning.ipynb  # Grid / Random Search optimization
-│   └── 06_xai_interpretability.ipynb    # SHAP and LIME explanations
+│   ├── 01_EDA.ipynb.ipynb               # Exploratory data analysis and profiling
+│   ├── 02_Preprocessing.ipynb           # Cleaning, imputation, and encoding
+│   ├── 03_Feature_Engineering_Selection.ipynb # Velocity and deviation feature computation
+│   ├── 03_imbalance_handling.ipynb      # SMOTE and resampling experiments
+│   ├── 04_model_benchmarking.ipynb      # Training and comparing 7 ML models
+│   ├── 05_hyperparameter_tuning.ipynb  # Grid search and random search optimization
+│   └── 06_xai_interpretability.ipynb    # SHAP and LIME model explanations
 │
 ├── src/
 │   ├── __init__.py
-│   ├── config.py            # Global paths, constants, and hyperparameters
-│   ├── data/                # Ingestion, validation, and preprocessing modules
-│   ├── features/            # Feature computation pipelines and encoders
-│   ├── models/              # Model training, hyperparameter search, evaluators
-│   ├── explainability/      # SHAP / LIME visualizer utilities
-│   └── utils/               # Logging, metrics calculation, and helpers
+│   ├── api.py               # FastAPI application for transaction scoring
+│   ├── config.py            # Project paths, configurations, and settings
+│   ├── explainability/      # SHAP, LIME adapters, service, and aggregator
+│   ├── features/            # Feature computation and transform utilities
+│   ├── models/              # Model training, persistence, and evaluation
+│   └── utils/               # Logging and general utility functions
 │
-├── app/
-│   ├── api/                 # REST API endpoints for real-time transaction scoring
-│   ├── dashboard/           # Interactive UI for compliance monitoring
-│   └── database/            # Database connectors, schemas, and ORM models
-│
-├── models_saved/            # Serialized models (.joblib, .json, .pkl)
-├── tests/                   # Unit, integration, and data validation tests
-├── requirements.txt         # Production and development dependencies
+├── app/                     # Web dashboard and UI components
+├── models_saved/            # Serialized model artifacts (.joblib, .pkl)
+├── tests/                   # Test suite (API and explainability tests)
+├── requirements.txt         # Project dependencies
 └── README.md                # Project documentation
 ```
 
 ---
 
-##  Technology Stack
+## Technology Stack
 
-- **Core & Runtime**: Python 3.10+
-- **Data Processing**: Pandas, NumPy, SciPy
-- **Data Visualization**: Matplotlib, Seaborn, Plotly
+- **Runtime & Language**: Python 3.10+
+- **Data Manipulation**: Pandas, NumPy, SciPy
+- **Visualization**: Matplotlib, Seaborn, Plotly
 - **Machine Learning**: Scikit-Learn, XGBoost, LightGBM, CatBoost, Imbalanced-Learn
-- **Explainable AI (XAI)**: SHAP, LIME
-- **Web & Serving**: FastAPI, Uvicorn, Streamlit
-- **Persistence**: SQLAlchemy, PostgreSQL / SQLite
-- **Quality Assurance**: Pytest, Black, Flake8
+- **Explainability**: SHAP, LIME
+- **API & Serving**: FastAPI, Uvicorn, Pydantic
+- **Testing & Quality**: Pytest, Black, Flake8
 
 ---
 
-##  Quickstart Guide
+## Getting Started
 
 ### Prerequisites
+
 - Python 3.10 or higher
 - Git
 
 ### Installation
 
-1. **Clone the repository**:
+1. Clone the repository:
    ```bash
    git clone https://github.com/navyavm123-sudo/AML-Transaction-Monitoring-ML.git
    cd AML-Transaction-Monitoring-ML
    ```
 
-2. **Create and activate a virtual environment**:
+2. Create and activate a virtual environment:
    ```bash
    # Linux / macOS
    python3 -m venv venv
@@ -226,45 +201,83 @@ AML-Transaction-Monitoring-ML/
    venv\Scripts\activate
    ```
 
-3. **Install dependencies**:
+3. Install the dependencies:
    ```bash
    pip install --upgrade pip
    pip install -r requirements.txt
    ```
 
+### Running the API
+
+Start the FastAPI real-time scoring server with Uvicorn:
+
+```bash
+uvicorn src.api:app --host 0.0.0.0 --port 8000 --reload
+```
+
+Once running, access:
+- Interactive API documentation (Swagger UI): `http://localhost:8000/docs`
+- Alternative API documentation (ReDoc): `http://localhost:8000/redoc`
+- Health check endpoint: `http://localhost:8000/health`
+
+### Running the Notebooks
+
+Launch Jupyter to explore the end-to-end development workflow:
+
+```bash
+jupyter lab
+# or
+jupyter notebook
+```
+
+Step through the notebooks sequentially from `01_EDA.ipynb.ipynb` to `06_xai_interpretability.ipynb`.
+
+### Running Tests
+
+Run the test suite using Pytest:
+
+```bash
+pytest
+```
+
 ---
 
-##  Project Roadmap
+## Project Roadmap
 
-- [ ] **Phase 1: Exploratory Data Analysis (EDA)** — Distribution profiling and risk correlation.
-- [ ] **Phase 2: Preprocessing & Feature Pipeline** — Imputation, outlier handling, and velocity feature engineering.
-- [ ] **Phase 3: Class Imbalance Evaluation** — Implementation of SMOTE, ADASYN, and cost-sensitive loss.
-- [ ] **Phase 4: Multi-Model Benchmark & Tuning** — Training 7 ML algorithms with Grid/Random hyperparameter search.
-- [ ] **Phase 5: Explainability (XAI) Engine** — SHAP and LIME explainers for compliance auditing.
-- [ ] **Phase 6: Web Application & Compliance Dashboard** — Real-time scoring API and interactive visual dashboard.
-- [ ] **Phase 7: System Validation & Benchmarking** — Comparative benchmark against traditional rule-based filters.
+- [x] Exploratory Data Analysis (EDA) on transaction distributions and risk indicators
+- [x] Preprocessing and feature engineering pipeline with temporal velocity metrics
+- [x] Class imbalance mitigation via SMOTE, Borderline-SMOTE, and cost-sensitive weighting
+- [x] Multi-model benchmarking across 7 algorithms and hyperparameter optimization
+- [x] Explainable AI (XAI) service using SHAP and LIME
+- [x] Real-time transaction scoring REST API with FastAPI
+- [x] Test suite covering API endpoints and explainability adapters
+- [ ] Interactive Streamlit compliance officer dashboard
+- [ ] Direct database persistence layer for alerts and audit logs
+- [ ] Graph-based entity resolution for multi-hop network detection
 
 ---
 
-##  Contributing
+## Contributing
 
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/navyavm123-sudo/AML-Transaction-Monitoring-ML/issues).
+Contributions are welcome. If you would like to contribute:
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Create a feature branch (`git checkout -b feature/improvement`)
+3. Commit your changes (`git commit -m 'Add new feature'`)
+4. Push to your branch (`git push origin feature/improvement`)
 5. Open a Pull Request
 
 ---
 
-##  Authors
+## Authors
 
 This project is developed and maintained by:
 
 | Name | GitHub |
 | :--- | :--- |
 | Navya VM | [@navyavm123-sudo](https://github.com/navyavm123-sudo) |
+| Abhinav | [@abhi-avv](https://github.com/abhi-avv) |
+| Anjana | |
 
 **Project Repository**: [navyavm123-sudo/AML-Transaction-Monitoring-ML](https://github.com/navyavm123-sudo/AML-Transaction-Monitoring-ML)
 
@@ -272,12 +285,12 @@ This project is developed and maintained by:
 
 ## Citation & License
 
-Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more information.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ```bibtex
 @misc{aml_transaction_monitoring_ml,
   title={An Intelligent Anti-Money Laundering (AML) Transaction Monitoring System Using Machine Learning},
-  author={Navya VM and Abhinav V,Anjana shankar},
+  author={Navya VM and Abhinav and Anjana},
   year={2026},
   publisher={GitHub},
   journal={GitHub repository},
